@@ -1,4 +1,5 @@
 **/.env/*
 **/dummy/*
 
+**/__pycache__/
 *.pyc
