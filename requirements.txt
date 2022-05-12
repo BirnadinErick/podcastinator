@@ -5,3 +5,4 @@ colorama==0.4.4
 feedparser==6.0.8
 grapheme==0.6.0
 sgmllib3k==1.0.0
+windows-curses==2.3.0
