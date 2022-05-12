@@ -40,6 +40,7 @@ class Parser:
 if __name__ == '__main__':
     s = os.path.abspath('dummy/beng.xml')
     r = Parser(s)
-    f = r.get_feed()[0]
-    for k,v in [(k,v) for k,v in f.items() if k in 'title, summary, links, author, published_parsed, content, itunes_explicit, itunes_duration'.split(', ')]:
-        print(k, ': ', r.html_to_text(v), '\n')
+    f = r.get_feed()[:10]
+    for i in f:
+        for k,v in [(k,v) for k,v in i.items() if k in 'title, summary, links, author, published_parsed, content, itunes_explicit, itunes_duration'.split(', ')]:
+            print(k, ': ', r.html_to_text(v), '\n')
