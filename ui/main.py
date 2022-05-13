@@ -1,7 +1,6 @@
 import curses
-from _utils import *
-from consts import *
-# from kernel.parser import Parser
+from ui._utils import *
+from ui.consts import *
 import json
 
 
@@ -103,6 +102,7 @@ def main(scr):
                         pdtitle = epi_loc[cursor_y-1]
                         pdauthor = "Dummy Author"
                         now_playing = "Now Playing:"
+                        pipe_to_kernel(epi_loc[cursor_y-1])
                         continue
                     except KeyError:
                         pass
@@ -180,4 +180,5 @@ def main(scr):
         else:
             pass
         
-curses.wrapper(main)
+if __name__ == "__main__":
+    curses.wrapper(main)

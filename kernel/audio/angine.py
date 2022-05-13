@@ -1,8 +1,5 @@
-import sys
-import alive_progress
 import click
 import os
-import asyncio
 
 import time
 def seconds_to_time(seconds: int) -> str:
@@ -127,37 +124,38 @@ class Angine:
             result = "%s/%s" % (t, d)
         return result
 
-async def ainput(string: str) -> str:
-    await asyncio.get_event_loop().run_in_executor(None, lambda s=string: sys.stdout.write(s+' '))
-    
-    return await asyncio.get_event_loop().run_in_executor(None, sys.stdin.readline)
+
+def test():
+    s = os.path.abspath('dummy/au.mp3')
+    player = Angine(path=s)
+    player.play()
 
 if __name__ == "__main__":
     s = os.path.abspath('dummy/au.mp3')
     player = Angine(path=s)
     player.play()
-    stop, duration = "", ""
-    duration = player.duration
-    print(f"This is {duration} long")
+    # stop, duration = "", ""
+    # duration = player.duration
+    # # print(f"This is {duration} long")
 
-    while True:
-        click.clear()
-        print(f"Now playing: {player.time}")
-        if stop:
-            print(f"paused at {stop}")
-        else:
-            print("playing something...")
-        i = input('What do i do now?')
-        if i == '!k':
-            stop = player.time
-            print(f'Paused at {stop}')
-            player.pause()
+    # while True:
+    #     # click.clear()
+    #     # print(f"Now playing: {player.time}")
+    #     # if stop:
+    #     #     # print(f"paused at {stop}")
+    #     # else:
+    #     #     # print("playing something...")
+    #     i = input()
+    #     if i == '!k':
+    #         stop = player.time
+    #         # print(f'Paused at {stop}')
+    #         player.pause()
             
-            continue
-        elif i == 's':
-            player.stop()
-            break
-        else:
-            player.play_from(stop/1000)
-            stop = 0
-            continue
+    #         continue
+    #     elif i == 's':
+    #         player.stop()
+    #         break
+    #     else:
+    #         player.play_from(stop/1000)
+    #         stop = 0
+    #         continue
