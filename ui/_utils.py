@@ -25,7 +25,7 @@ def pprint(scr, str, attr,*pos,):
 
 def pipe_to_kernel(obj:object=None)->object:
     s = socket.socket()		
-    PORT = 62003
+    PORT = 3000
     s.connect(('127.0.0.1', PORT))
     s.send(obj.encode('utf-8')[:1024])
     s.close()

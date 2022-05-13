@@ -1,7 +1,9 @@
+import multiprocessing
 import os		
 import subprocess
 from curses import wrapper
 from kernel.kernel import bootstrap_kernel
+import multiprocessing
 from ui.main import main
 
 def pprint(str:str)->None:
@@ -13,8 +15,9 @@ def ui()->None:
 
 
 if __name__ == '__main__':
-    # bk = multiprocessing.Process(target=test)
-    # bk.start()
-    kernel = subprocess.Popen(['python', os.path.join('kernel','kernel.py')])
+    bk = multiprocessing.Process(target=bootstrap_kernel)
+    bk.start()
+    # kernel = subprocess.Popen(['python', os.path.join('kernel','kernel.py')])
     ui()
-    kernel.terminate()
+    # kernel.terminate()
+    bk.kill()

@@ -1,10 +1,13 @@
-import click
 import os
 
 import time
 def seconds_to_time(seconds: int) -> str:
     seconds = max(0, seconds)
     return time.strftime("%H:%M:%S", time.gmtime(seconds))
+
+def pprint(str:str)->None:
+    with open('angine.log', 'w') as log:
+        log.write(str)
 
 class Angine:
     def __init__(self, title=None, path=None, episode=None) -> None:
@@ -20,7 +23,7 @@ class Angine:
         # ! before importing the module into memoryspace
  
         os.environ["PATH"] += os.pathsep + os.path.dirname(__file__)
-        import mpv
+        import kernel.audio.mpv as mpv
         self.mpv = mpv
     
     
@@ -129,33 +132,58 @@ def test():
     s = os.path.abspath('dummy/au.mp3')
     player = Angine(path=s)
     player.play()
+    stop, duration = "", ""
+    duration = player.duration
+    # print(f"This is {duration} long")
+
+    while True:
+        # click.clear()
+        pprint(f"Now playing: {player.time}")
+        if stop:
+            pprint(f"paused at {stop}")
+        else:
+            pprint("playing something...")
+        i = input()
+        if i == '!k':
+            stop = player.time
+            pprint(f'Paused at {stop}')
+            player.pause()
+            
+            continue
+        elif i == 's':
+            player.stop()
+            break
+        else:
+            player.play_from(stop/1000)
+            stop = 0
+            continue
 
 if __name__ == "__main__":
     s = os.path.abspath('dummy/au.mp3')
     player = Angine(path=s)
     player.play()
-    # stop, duration = "", ""
-    # duration = player.duration
-    # # print(f"This is {duration} long")
+    stop, duration = "", ""
+    duration = player.duration
+    # pprint(f"This is {duration} long")
 
-    # while True:
-    #     # click.clear()
-    #     # print(f"Now playing: {player.time}")
-    #     # if stop:
-    #     #     # print(f"paused at {stop}")
-    #     # else:
-    #     #     # print("playing something...")
-    #     i = input()
-    #     if i == '!k':
-    #         stop = player.time
-    #         # print(f'Paused at {stop}')
-    #         player.pause()
+    while True:
+        # click.clear()
+        print(f"Now playing: {player.time}")
+        if stop:
+            print(f"paused at {stop}")
+        else:
+            print("playing something...")
+        i = input()
+        if i == '!k':
+            stop = player.time
+            print(f'Paused at {stop}')
+            player.pause()
             
-    #         continue
-    #     elif i == 's':
-    #         player.stop()
-    #         break
-    #     else:
-    #         player.play_from(stop/1000)
-    #         stop = 0
-    #         continue
+            continue
+        elif i == 's':
+            player.stop()
+            break
+        else:
+            player.play_from(stop/1000)
+            stop = 0
+            continue
