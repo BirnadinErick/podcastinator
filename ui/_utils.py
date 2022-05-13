@@ -1,5 +1,7 @@
 import socket
 
+PORT = 62003
+
 def clear_refresh(scr):
     """
     Clears the screen and refreshes it
@@ -23,9 +25,18 @@ def pprint(scr, str, attr,*pos,):
     """
     scr.addstr(*pos, str,attr)
 
-def pipe_to_kernel(obj:object=None)->object:
-    s = socket.socket()		
-    PORT = 3000
-    s.connect(('127.0.0.1', PORT))
-    s.send(obj.encode('utf-8')[:1024])
-    s.close()
+def pipe_to_kernel(obj:str=None)->str:
+    """
+    ? Send cmds to kernel via socket
+    """
+    global PORT
+    while True:
+        try:
+            s = socket.socket()		
+            s.connect(('127.0.0.1', PORT))
+            s.send(obj.encode('utf-8')[:1024])
+            s.close()
+        except ConnectionRefusedError:
+            break
+        else:
+            break

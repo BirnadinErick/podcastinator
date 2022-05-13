@@ -4,15 +4,13 @@ from kernel.audio.angine import Angine, test
 
 def pprint(str:str)->None:
     with open('kernel.log', 'a') as log:
-        log.write(str)
+        log.write(str+'\n')
 
-# next create a socket object
 def bootstrap_kernel():
     s = socket.socket()		
     pprint ("Socket successfully created")
 
-    PORT = 3000
-    # s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    PORT = 62003
     s.bind(('127.0.0.1', PORT))		
     pprint ("socket binded to %s" %(PORT))
 
