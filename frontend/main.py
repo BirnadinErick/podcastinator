@@ -1,8 +1,12 @@
 import curses
-from ui._utils import *
-from ui.consts import *
 import json
+import zerorpc as rpc
 
+from frontend._utils import *
+from frontend.consts import *
+
+kernel_pipe = rpc.Client()
+kernel_pipe.connect('tcp://127.0.0.1:62003')
 
 # begin bootstrap dummy data --------------------------------------------------------
 def get_subs():
@@ -23,8 +27,10 @@ now_playing:str = "Nothing Playing Now, Play some podcast and enjoy your time"
 
 
 def main(scr):
-    global TITLE, CMDS_HELP, now_playing, time
+    global TITLE, CMDS_HELP, now_playing, time, kernel_pipe
     
+    
+    # * begin initiate color system --------------------------------------------------------
     clear_refresh(scr)
     curses.start_color()
     curses.init_pair(1, RED, BLACK)
@@ -34,32 +40,15 @@ def main(scr):
     PRIMARY = curses.color_pair(1)
     SECONDARY = curses.color_pair(2)
     HIGHLIGHT = curses.color_pair(3)
+    # *  end initiate color system ----------------------------------------------------------
+    
+    
+    # * begin init consts --------------------------------------------------------
     HEIGHT, WIDTH = scr.getmaxyx()
     pdtitle:str = ""
     pdauthor:str = ""
     cursor_x = 0
     cursor_y = 0
-
-    titlebar = curses.newwin(1,WIDTH,0,0)
-    mainarea_l = curses.newwin(HEIGHT-4, WIDTH//2,1,0)
-    mainarea_r = curses.newwin(HEIGHT-4, WIDTH//2,1,WIDTH//2)
-    statusbar = curses.newwin(3, WIDTH, HEIGHT-3,0)
-
-    def f5_win():
-        titlebar.refresh()
-        mainarea_l.refresh()
-        mainarea_r.refresh()
-        statusbar.refresh()
-
-    mainarea_l.border('|', '|', '-','_', '+', '+', '+', '+')
-    mainarea_r.border('|', '|', '-','_', '+', '+', '+', '+')
-
-    titlebar.attron(PRIMARY|curses.A_REVERSE)
-    mainarea_l.attron(SECONDARY)
-
-    titlebar.addstr(f"{TITLE} {' '*(WIDTH-(len(TITLE)+len(CMDS_HELP)+3))} {CMDS_HELP}")
-
-    f5_win()
     subs = get_subs()["subs"]
     epis = get_epi()["BEngShow"]
     cmd_mode = False
@@ -67,11 +56,51 @@ def main(scr):
     subs_loc = {}
     epi_loc = {}
     sub_pg, epi_pg = {}, {'now':1, 'total':4}
+    # * end init consts ----------------------------------------------------------
+
+    
+    # * begin init windows --------------------------------------------------------
+    titlebar = curses.newwin(1,WIDTH,0,0)
+    mainarea_l = curses.newwin(HEIGHT-4, WIDTH//2,1,0)
+    mainarea_r = curses.newwin(HEIGHT-4, WIDTH//2,1,WIDTH//2)
+    statusbar = curses.newwin(3, WIDTH, HEIGHT-3,0)
+    # * end init windows ----------------------------------------------------------
+
+    def f5_win():
+        """
+        ? Refreshes windows in the screen
+        """
+        titlebar.refresh()
+        mainarea_l.refresh()
+        mainarea_r.refresh()
+        statusbar.refresh()
+
+    
+    # * begin decorate windows --------------------------------------------------------
+    mainarea_l.border('|', '|', '-','_', '+', '+', '+', '+')
+    mainarea_r.border('|', '|', '-','_', '+', '+', '+', '+')
+    titlebar.attron(PRIMARY|curses.A_REVERSE)
+    mainarea_l.attron(SECONDARY)
+    titlebar.addstr(
+        f"{TITLE} {' '*(WIDTH-(len(TITLE)+len(CMDS_HELP)+3))} {CMDS_HELP}"
+    ) 
+    # * end decorate windows ----------------------------------------------------------
+
+    f5_win()
 
     while True:
-        statusbar.addstr(0,0,f"{now_playing}{' '*(WIDTH-len(now_playing))}", HIGHLIGHT)
-        statusbar.addstr(1,0,f"{pdtitle} {'by' if pdtitle != '' else '  '} {pdauthor} {' '*(WIDTH-(len(pdtitle)+ 4+len(pdauthor)+1))}", HIGHLIGHT|curses.A_ITALIC|curses.A_REVERSE)
-
+        
+        # begin decorate windows  --------------------------------------------------------
+        statusbar.addstr(
+            0,0,
+            f"{now_playing}{' '*(WIDTH-len(now_playing))}", 
+            HIGHLIGHT
+        )
+        statusbar.addstr(
+            1,0,
+            f"{pdtitle} {'by' if pdtitle != '' else '  '} {pdauthor} {' '*(WIDTH-(len(pdtitle)+ 4+len(pdauthor)+1))}",
+            HIGHLIGHT|curses.A_ITALIC|curses.A_REVERSE
+        )
         mainarea_l.addstr(1,1, "Subscriptions", SECONDARY|curses.A_REVERSE|curses.A_BOLD)
         mainarea_l.addstr(2,1, "-"*(WIDTH//2-2), SECONDARY)
        
@@ -79,9 +108,11 @@ def main(scr):
             mainarea_l.addstr(i+3, 4, str(subs[i]).title())
             subs_loc[i+3] = subs[i]
 
-        f5_win()
-        key = scr.getch()
+        # end decorate windows  ----------------------------------------------------------
+        f5_win() # refresh the windows to sync the changes
+        key = scr.getch() # get the user key
 
+        # exec cmd based on user input
         try:
             if key == ord('q'):
                 if cmd_mode:
@@ -102,7 +133,17 @@ def main(scr):
                         pdtitle = epi_loc[cursor_y-1]
                         pdauthor = "Dummy Author"
                         now_playing = "Now Playing:"
-                        pipe_to_kernel(epi_loc[cursor_y-1])
+                        
+                        # req = get_rpc_req({
+                        #     'method': 'play',
+                        #     'params': str(epi_loc[cursor_y-1])
+                        # })
+                        # len_req = len(req)
+                        # pipe_to_kernel(str(len_req))
+                        # pipe_to_kernel(req)
+
+                        kernel_pipe.log_hello(epi_loc[cursor_y-1], **{'async':True})
+                        
                         continue
                     except KeyError:
                         pass
